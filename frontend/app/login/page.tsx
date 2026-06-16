@@ -20,7 +20,7 @@ export default function LoginPage() {
       setError('Email o contraseña incorrectos')
       return
     }
-    router.push('/dashboard')
+    const rol = useAuthStore.getState().usuario?.rol; router.push(rol === 'PACIENTE' ? '/paciente' : '/dashboard')
   }
 
   return (
