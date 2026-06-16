@@ -14,9 +14,10 @@ export class AuthService {
   async login(email: string, password: string) {
     const usuario = await this.prisma.usuario.findUnique({
       where: { email, deleted_at: null },
-      include: {
-        centro: { select: { id: true, nombre: true } },
-      },
+     include: {
+  centro: { select: { id: true, nombre: true } },
+  paciente: { select: { id: true } },
+},
     })
 
     if (!usuario || !usuario.activo) {
@@ -50,14 +51,15 @@ export class AuthService {
     return {
       access_token,
       refresh_token,
-      usuario: {
-        id: usuario.id,
-        nombre: usuario.nombre,
-        apellido: usuario.apellido,
-        email: usuario.email,
-        rol: usuario.rol,
-        centro: usuario.centro,
-      },
+     usuario: {
+  id: usuario.id,
+  nombre: usuario.nombre,
+  apellido: usuario.apellido,
+  email: usuario.email,
+  rol: usuario.rol,
+ centro: usuario.centro,
+  paciente_id: usuario.paciente?.id ?? null,
+},
     }
   }
 

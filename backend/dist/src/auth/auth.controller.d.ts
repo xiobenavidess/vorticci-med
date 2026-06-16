@@ -18,6 +18,7 @@ export declare class AuthController {
                 id: string;
                 nombre: string;
             } | null;
+            paciente_id: string | null;
         };
     }>;
     refresh(body: {

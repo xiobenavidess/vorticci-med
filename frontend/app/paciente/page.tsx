@@ -2,32 +2,22 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/auth.store'
-
-const CITAS_DEMO = [
-  { id: '1', motivo: 'Control post-op rodilla', medico: 'Dr. Morales', especialidad: 'Traumatología', fecha: '2026-07-18', hora: '10:30', estado: 'CONFIRMADA' },
-  { id: '2', motivo: 'Seguimiento kinesiología', medico: 'Dr. Morales', especialidad: 'Traumatología', fecha: '2026-08-02', hora: '11:00', estado: 'CREADA' },
-]
-
-const HISTORIAL_DEMO = [
-  { id: '3', motivo: 'Control rodilla', fecha: '2026-02-18', medico: 'Dr. Morales', diagnostico: 'Tendinitis rotuliana bilateral. Reposo deportivo 3 semanas.', indicaciones: ['Ibuprofeno 400mg cada 8h por 5 días', 'Kinesiología 2x semana', 'Hielo local 15 min, 3x día'] },
-  { id: '4', motivo: 'Dolor lumbar', fecha: '2026-01-30', medico: 'Dr. Morales', diagnostico: 'Contractura lumbar. Calor local y reposo relativo.', indicaciones: ['Miorrelajante 1 comp/noche x 5 días', 'Evitar sedestación prolongada'] },
-  { id: '5', motivo: 'Primera consulta', fecha: '2023-12-05', medico: 'Dr. Morales', diagnostico: 'Evaluación inicial. Sin hallazgos agudos.', indicaciones: ['Control en 3 meses'] },
-]
+import { api } from '@/lib/api'
 
 const ESTADO_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  CONFIRMADA:  { label: 'Confirmado', color: '#4ADE80', bg: 'rgba(74,222,128,0.15)' },
-  CREADA:      { label: 'Agendado',   color: '#94A3B8', bg: 'rgba(148,163,184,0.15)' },
+  CONFIRMADA:  { label: 'Confirmado',  color: '#4ADE80', bg: 'rgba(74,222,128,0.15)' },
+  CREADA:      { label: 'Agendado',    color: '#94A3B8', bg: 'rgba(148,163,184,0.15)' },
   EN_ATENCION: { label: 'En atención', color: '#60A5FA', bg: 'rgba(96,165,250,0.15)' },
+  FINALIZADA:  { label: 'Finalizada',  color: '#4ADE80', bg: 'rgba(74,222,128,0.15)' },
+  NO_SHOW:     { label: 'No asistió',  color: '#F87171', bg: 'rgba(248,113,113,0.15)' },
 }
 
-type Vista = 'inicio' | 'citas' | 'historial'
-
-const W = '#FFFFFF'        // blanco puro — títulos y valores clave
-const M = '#CBD5E1'        // gris claro — texto secundario legible
-const S = '#64748B'        // gris medio — labels uppercase, metadatos
-const CARD = '#1E293B'     // fondo card con buen contraste sobre #0F172A
-const INNER = '#273449'    // fondo inner card (fecha/hora box)
-const BG = '#0F172A'       // fondo página
+const W = '#FFFFFF'
+const M = '#CBD5E1'
+const S = '#64748B'
+const CARD = '#1E293B'
+const INNER = '#273449'
+const BG = '#0F172A'
 
 function formatFecha(f: string) {
   return new Date(f).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -35,11 +25,16 @@ function formatFecha(f: string) {
 function formatCorta(f: string) {
   return new Date(f).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' })
 }
+function formatHora(f: string) {
+  return new Date(f).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })
+}
 
 const LABEL: React.CSSProperties = {
   fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
   textTransform: 'uppercase', color: S, marginBottom: 8,
 }
+
+type Vista = 'inicio' | 'citas' | 'historial'
 
 export default function PacientePage() {
   const { usuario, logout } = useAuthStore()
@@ -47,23 +42,45 @@ export default function PacientePage() {
   const [mounted, setMounted] = useState(false)
   const [vista, setVista] = useState<Vista>('inicio')
   const [expandido, setExpandido] = useState<string | null>(null)
+  const [citas, setCitas] = useState<any[]>([])
+  const [historial, setHistorial] = useState<any[]>([])
+  const [cargando, setCargando] = useState(true)
 
   useEffect(() => { setMounted(true) }, [])
+
   useEffect(() => {
     if (!mounted) return
-    if (!localStorage.getItem('access_token')) router.push('/login')
-  }, [mounted, router])
+    if (!localStorage.getItem('access_token')) { router.push('/login'); return }
+    cargarDatos()
+  }, [mounted])
+
+  async function cargarDatos() {
+    try {
+      setCargando(true)
+      if (!usuario?.paciente_id) return
+      const [citasRes, fichasRes] = await Promise.all([
+        api.citas.porPaciente(usuario.paciente_id),
+        api.pacientes.getById(usuario.paciente_id),
+      ])
+      setCitas(citasRes ?? [])
+      setHistorial(fichasRes?.citas?.filter((c: any) => c.ficha && c.estado === 'FINALIZADA') ?? [])
+    } catch (e) {
+      console.error('Error cargando datos paciente:', e)
+    } finally {
+      setCargando(false)
+    }
+  }
 
   if (!mounted) return null
 
   const nombre = usuario?.nombre ?? 'Paciente'
-  const proximas = CITAS_DEMO.filter(c => new Date(c.fecha) >= new Date())
-  const ultima = HISTORIAL_DEMO[0]
-  const fechaHoy = new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })
+  const hoy = new Date()
+  const proximas = citas.filter(c => new Date(c.fecha_hora) >= hoy && c.estado !== 'FINALIZADA' && c.estado !== 'NO_SHOW')
+  const pasadas = citas.filter(c => c.estado === 'FINALIZADA')
+  const fechaHoy = hoy.toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (
     <div style={{ minHeight: '100vh', background: BG, color: W, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
-
       {/* NAVBAR */}
       <header style={{ height: 48, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', borderBottom: '1px solid #1E293B', background: BG }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -86,7 +103,7 @@ export default function PacientePage() {
         {([
           { id: 'inicio', label: 'Inicio' },
           { id: 'citas', label: 'Mis citas', badge: proximas.length },
-          { id: 'historial', label: 'Historial' },
+          { id: 'historial', label: 'Historial', badge: pasadas.length },
         ] as { id: Vista; label: string; badge?: number }[]).map(t => (
           <button key={t.id} onClick={() => setVista(t.id)} style={{
             background: 'none', border: 'none', padding: '14px 24px',
@@ -103,19 +120,21 @@ export default function PacientePage() {
 
       {/* CONTENIDO */}
       <div style={{ padding: '36px 28px' }}>
+        {cargando && (
+          <div style={{ textAlign: 'center', color: S, fontSize: 15, paddingTop: 60 }}>Cargando...</div>
+        )}
 
         {/* ── INICIO ── */}
-        {vista === 'inicio' && <>
+        {!cargando && vista === 'inicio' && <>
           <h1 style={{ fontSize: 36, fontWeight: 700, color: W, marginBottom: 4 }}>{nombre.split(' ')[0]}</h1>
           <p style={{ fontSize: 14, color: M, marginBottom: 32, textTransform: 'capitalize' }}>{fechaHoy}</p>
 
-          {/* Métricas */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 14, marginBottom: 24 }}>
             {[
               { label: 'RUT', big: usuario?.rut ?? '—', sub: '' },
-              { label: 'Próxima cita', big: proximas[0] ? formatCorta(proximas[0].fecha) : '—', sub: proximas[0]?.hora ?? '' },
-              { label: 'Total consultas', big: String(HISTORIAL_DEMO.length), sub: 'Desde dic 2023' },
-              { label: 'Médico tratante', big: 'Dr. Morales', sub: 'Traumatología' },
+              { label: 'Próxima cita', big: proximas[0] ? formatCorta(proximas[0].fecha_hora) : '—', sub: proximas[0] ? formatHora(proximas[0].fecha_hora) : '' },
+              { label: 'Total consultas', big: String(pasadas.length), sub: 'Finalizadas' },
+              { label: 'Citas pendientes', big: String(proximas.length), sub: 'Próximas' },
             ].map((m, i) => (
               <div key={i} style={{ background: CARD, border: '1px solid #273449', borderRadius: 12, padding: '18px 20px' }}>
                 <div style={LABEL}>{m.label}</div>
@@ -125,9 +144,7 @@ export default function PacientePage() {
             ))}
           </div>
 
-          {/* 2 cols */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-
             {/* Próxima cita */}
             <div style={{ background: CARD, border: '1px solid #273449', borderRadius: 12, padding: '22px 24px' }}>
               <div style={LABEL}>Próxima cita</div>
@@ -136,15 +153,15 @@ export default function PacientePage() {
                 return <>
                   <span style={{ fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color, padding: '4px 12px', borderRadius: 6, display: 'inline-block', marginBottom: 14 }}>{cfg.label}</span>
                   <div style={{ fontSize: 26, fontWeight: 700, color: W, marginBottom: 6 }}>{proximas[0].motivo}</div>
-                  <div style={{ fontSize: 15, color: M, marginBottom: 18 }}>{proximas[0].medico} · {proximas[0].especialidad}</div>
+                  <div style={{ fontSize: 15, color: M, marginBottom: 18 }}>{proximas[0].profesional?.usuario?.nombre ?? 'Médico'}</div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', background: INNER, borderRadius: 10, padding: '16px 18px', gap: 16 }}>
                     <div>
                       <div style={LABEL}>Fecha</div>
-                      <div style={{ fontSize: 17, fontWeight: 600, color: W }}>{formatFecha(proximas[0].fecha)}</div>
+                      <div style={{ fontSize: 17, fontWeight: 600, color: W }}>{formatFecha(proximas[0].fecha_hora)}</div>
                     </div>
                     <div>
                       <div style={LABEL}>Hora</div>
-                      <div style={{ fontSize: 17, fontWeight: 600, color: W }}>{proximas[0].hora}</div>
+                      <div style={{ fontSize: 17, fontWeight: 600, color: W }}>{formatHora(proximas[0].fecha_hora)}</div>
                     </div>
                   </div>
                 </>
@@ -156,36 +173,30 @@ export default function PacientePage() {
             {/* Última consulta */}
             <div style={{ background: CARD, border: '1px solid #273449', borderRadius: 12, padding: '22px 24px' }}>
               <div style={LABEL}>Última consulta</div>
-              <div style={{ fontSize: 14, color: M, marginBottom: 18 }}>{formatFecha(ultima.fecha)} · {ultima.medico}</div>
-
-              <div style={{ marginBottom: 20 }}>
-                <div style={LABEL}>Diagnóstico</div>
-                <div style={{ fontSize: 16, color: W, lineHeight: 1.6 }}>{ultima.diagnostico}</div>
-              </div>
-
-              <div>
-                <div style={LABEL}>Indicaciones</div>
-                {ultima.indicaciones.map((ind, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 8 }}>
-                    <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ADE80', marginTop: 6, flexShrink: 0 }} />
-                    <span style={{ fontSize: 15, color: W, lineHeight: 1.5 }}>{ind}</span>
-                  </div>
-                ))}
-              </div>
+              {pasadas[0] ? <>
+                <div style={{ fontSize: 14, color: M, marginBottom: 18 }}>{formatFecha(pasadas[0].fecha_hora)} · {pasadas[0].profesional?.usuario?.nombre ?? 'Médico'}</div>
+                <div style={{ marginBottom: 20 }}>
+                  <div style={LABEL}>Diagnóstico</div>
+                  <div style={{ fontSize: 16, color: W, lineHeight: 1.6 }}>{pasadas[0].ficha?.diagnostico ?? 'Sin diagnóstico registrado'}</div>
+                </div>
+                <div>
+                  <div style={LABEL}>Indicaciones</div>
+                  <div style={{ fontSize: 15, color: W, lineHeight: 1.6 }}>{pasadas[0].ficha?.indicaciones ?? '—'}</div>
+                </div>
+              </> : (
+                <div style={{ fontSize: 15, color: S, textAlign: 'center', padding: '28px 0' }}>Sin consultas previas</div>
+              )}
             </div>
           </div>
         </>}
 
         {/* ── MIS CITAS ── */}
-        {vista === 'citas' && <>
+        {!cargando && vista === 'citas' && <>
           <h1 style={{ fontSize: 28, fontWeight: 700, color: W, marginBottom: 6 }}>Mis citas</h1>
           <p style={{ fontSize: 14, color: M, marginBottom: 28 }}>{proximas.length} cita{proximas.length !== 1 ? 's' : ''} próxima{proximas.length !== 1 ? 's' : ''}</p>
-
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {proximas.length === 0 && (
-              <div style={{ background: CARD, borderRadius: 12, padding: 40, textAlign: 'center', color: S, fontSize: 15, border: '1px solid #273449' }}>
-                No hay citas programadas
-              </div>
+              <div style={{ background: CARD, borderRadius: 12, padding: 40, textAlign: 'center', color: S, fontSize: 15, border: '1px solid #273449' }}>No hay citas programadas</div>
             )}
             {proximas.map(c => {
               const cfg = ESTADO_CONFIG[c.estado] ?? { label: c.estado, color: W, bg: '#ffffff15' }
@@ -195,11 +206,11 @@ export default function PacientePage() {
                     <div>
                       <span style={{ fontSize: 12, fontWeight: 700, background: cfg.bg, color: cfg.color, padding: '4px 12px', borderRadius: 6, display: 'inline-block', marginBottom: 12 }}>{cfg.label}</span>
                       <div style={{ fontSize: 22, fontWeight: 700, color: W, marginBottom: 6 }}>{c.motivo}</div>
-                      <div style={{ fontSize: 15, color: M }}>{c.medico} · {c.especialidad}</div>
+                      <div style={{ fontSize: 15, color: M }}>{c.profesional?.usuario?.nombre ?? 'Médico'}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
-                      <div style={{ fontSize: 26, fontWeight: 700, color: W }}>{formatCorta(c.fecha)}</div>
-                      <div style={{ fontSize: 16, color: M }}>{c.hora}</div>
+                      <div style={{ fontSize: 26, fontWeight: 700, color: W }}>{formatCorta(c.fecha_hora)}</div>
+                      <div style={{ fontSize: 16, color: M }}>{formatHora(c.fecha_hora)}</div>
                     </div>
                   </div>
                 </div>
@@ -209,18 +220,20 @@ export default function PacientePage() {
         </>}
 
         {/* ── HISTORIAL ── */}
-        {vista === 'historial' && <>
+        {!cargando && vista === 'historial' && <>
           <h1 style={{ fontSize: 28, fontWeight: 700, color: W, marginBottom: 6 }}>Historial de consultas</h1>
-          <p style={{ fontSize: 14, color: M, marginBottom: 28 }}>{HISTORIAL_DEMO.length} consultas registradas</p>
-
+          <p style={{ fontSize: 14, color: M, marginBottom: 28 }}>{pasadas.length} consultas registradas</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {HISTORIAL_DEMO.map(h => (
+            {pasadas.length === 0 && (
+              <div style={{ background: CARD, borderRadius: 12, padding: 40, textAlign: 'center', color: S, fontSize: 15, border: '1px solid #273449' }}>Sin historial de consultas</div>
+            )}
+            {pasadas.map(h => (
               <div key={h.id} style={{ background: CARD, border: '1px solid #273449', borderRadius: 12, overflow: 'hidden', cursor: 'pointer' }}
                 onClick={() => setExpandido(expandido === h.id ? null : h.id)}>
                 <div style={{ padding: '18px 24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontSize: 18, fontWeight: 600, color: W, marginBottom: 4 }}>{h.motivo}</div>
-                    <div style={{ fontSize: 14, color: M }}>{formatFecha(h.fecha)} · {h.medico}</div>
+                    <div style={{ fontSize: 14, color: M }}>{formatFecha(h.fecha_hora)} · {h.profesional?.usuario?.nombre ?? 'Médico'}</div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                     <span style={{ fontSize: 12, fontWeight: 700, background: 'rgba(74,222,128,0.15)', color: '#4ADE80', padding: '4px 12px', borderRadius: 6 }}>Finalizada</span>
@@ -232,16 +245,17 @@ export default function PacientePage() {
                     <div style={{ paddingTop: 20, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 28 }}>
                       <div>
                         <div style={LABEL}>Diagnóstico</div>
-                        <div style={{ fontSize: 15, color: W, lineHeight: 1.6 }}>{h.diagnostico}</div>
+                        <div style={{ fontSize: 15, color: W, lineHeight: 1.6 }}>{h.ficha?.diagnostico ?? '—'}</div>
                       </div>
                       <div>
                         <div style={LABEL}>Indicaciones</div>
-                        {h.indicaciones.map((ind, i) => (
-                          <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 8 }}>
-                            <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ADE80', marginTop: 5, flexShrink: 0 }} />
-                            <span style={{ fontSize: 15, color: W, lineHeight: 1.5 }}>{ind}</span>
+                        <div style={{ fontSize: 15, color: W, lineHeight: 1.6 }}>{h.ficha?.indicaciones ?? '—'}</div>
+                        {h.ficha?.proximo_control && (
+                          <div style={{ marginTop: 16 }}>
+                            <div style={LABEL}>Próximo control</div>
+                            <div style={{ fontSize: 15, color: W }}>{h.ficha.proximo_control}</div>
                           </div>
-                        ))}
+                        )}
                       </div>
                     </div>
                   </div>
@@ -250,7 +264,6 @@ export default function PacientePage() {
             ))}
           </div>
         </>}
-
       </div>
     </div>
   )

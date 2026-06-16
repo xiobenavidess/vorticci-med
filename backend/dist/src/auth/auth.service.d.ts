@@ -17,6 +17,7 @@ export declare class AuthService {
                 id: string;
                 nombre: string;
             } | null;
+            paciente_id: string | null;
         };
     }>;
     refresh(token: string): Promise<{

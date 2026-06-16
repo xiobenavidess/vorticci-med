@@ -60,6 +60,7 @@ let AuthService = class AuthService {
             where: { email, deleted_at: null },
             include: {
                 centro: { select: { id: true, nombre: true } },
+                paciente: { select: { id: true } },
             },
         });
         if (!usuario || !usuario.activo) {
@@ -94,6 +95,7 @@ let AuthService = class AuthService {
                 email: usuario.email,
                 rol: usuario.rol,
                 centro: usuario.centro,
+                paciente_id: usuario.paciente?.id ?? null,
             },
         };
     }
