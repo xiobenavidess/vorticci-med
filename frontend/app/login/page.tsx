@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/auth.store'
@@ -20,59 +19,76 @@ export default function LoginPage() {
       setError('Email o contraseña incorrectos')
       return
     }
-    const rol = useAuthStore.getState().usuario?.rol; router.push(rol === 'PACIENTE' ? '/paciente' : '/dashboard')
+    const rol = useAuthStore.getState().usuario?.rol
+    router.push(rol === 'PACIENTE' ? '/paciente' : '/dashboard')
   }
 
   return (
-    <div className="min-h-screen bg-[#0A0F0D] flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div style={{
+      minHeight: '100dvh',
+      background: '#0F1117',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px 20px',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+    }}>
+      <div style={{ width: '100%', maxWidth: 400 }}>
 
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-10">
-          <div className="w-9 h-9 bg-[#1D9E75] rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">V</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40 }}>
+          <div style={{ width: 40, height: 40, background: '#1D9E75', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ color: '#fff', fontWeight: 800, fontSize: 16 }}>V</span>
           </div>
-          <span className="text-white font-semibold text-lg tracking-tight">
-            Vorticci <span className="text-[#1D9E75]">Med</span>
-          </span>
+          <div>
+            <div style={{ color: '#E6EDF3', fontWeight: 700, fontSize: 18, lineHeight: 1.2 }}>
+              Vorticci <span style={{ color: '#1D9E75' }}>Med</span>
+            </div>
+            <div style={{ color: '#8B949E', fontSize: 12 }}>Sistema médico</div>
+          </div>
         </div>
 
         {/* Card */}
-        <div className="bg-[#111816] border border-white/10 rounded-2xl p-8">
-          <h1 className="text-white text-2xl font-bold mb-1">Bienvenida</h1>
-          <p className="text-white/50 text-sm mb-8">Ingresa a tu cuenta para continuar</p>
+        <div style={{ background: '#161B22', border: '1px solid #30363D', borderRadius: 16, padding: '28px 24px' }}>
+          <h1 style={{ color: '#E6EDF3', fontSize: 24, fontWeight: 700, margin: '0 0 4px 0' }}>Bienvenida</h1>
+          <p style={{ color: '#8B949E', fontSize: 14, margin: '0 0 28px 0' }}>Ingresa a tu cuenta para continuar</p>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
-              <label className="text-[#5DCAA5] text-xs font-semibold uppercase tracking-widest mb-2 block">
+              <label style={{ display: 'block', color: '#1D9E75', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                 Email
               </label>
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 placeholder="tu@clinica.com"
                 required
-                className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-[#1D9E75] focus:bg-white/8 transition-all"
+                style={{ width: '100%', background: '#0D1117', border: '1px solid #30363D', borderRadius: 10, padding: '14px 16px', color: '#E6EDF3', fontSize: 16, outline: 'none', boxSizing: 'border-box', WebkitAppearance: 'none' }}
+                onFocus={e => e.target.style.borderColor = '#1D9E75'}
+                onBlur={e => e.target.style.borderColor = '#30363D'}
               />
             </div>
 
             <div>
-              <label className="text-[#5DCAA5] text-xs font-semibold uppercase tracking-widest mb-2 block">
+              <label style={{ display: 'block', color: '#1D9E75', fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>
                 Contraseña
               </label>
               <input
                 type="password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={e => setPassword(e.target.value)}
                 placeholder="••••••••"
                 required
-                className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-3 text-white text-sm placeholder:text-white/25 focus:outline-none focus:border-[#1D9E75] focus:bg-white/8 transition-all"
+                style={{ width: '100%', background: '#0D1117', border: '1px solid #30363D', borderRadius: 10, padding: '14px 16px', color: '#E6EDF3', fontSize: 16, outline: 'none', boxSizing: 'border-box', WebkitAppearance: 'none' }}
+                onFocus={e => e.target.style.borderColor = '#1D9E75'}
+                onBlur={e => e.target.style.borderColor = '#30363D'}
               />
             </div>
 
             {error && (
-              <div className="bg-red-500/10 border border-red-500/40 rounded-xl px-4 py-3 text-red-400 text-sm font-medium">
+              <div style={{ background: 'rgba(194,74,74,0.12)', border: '1px solid rgba(194,74,74,0.4)', borderRadius: 10, padding: '12px 16px', color: '#C46A6A', fontSize: 14, fontWeight: 500 }}>
                 {error}
               </div>
             )}
@@ -80,14 +96,14 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#1D9E75] hover:bg-[#25B587] active:bg-[#0F6E56] disabled:opacity-40 text-white font-bold py-3.5 rounded-xl transition-all mt-1 text-sm"
+              style={{ width: '100%', background: loading ? '#144d3a' : '#1D9E75', color: '#fff', fontWeight: 700, fontSize: 16, padding: '16px', borderRadius: 10, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', marginTop: 4, transition: 'background 0.2s' }}
             >
               {loading ? 'Ingresando...' : 'Ingresar →'}
             </button>
           </form>
         </div>
 
-        <p className="text-white/20 text-xs text-center mt-6">
+        <p style={{ color: '#484F58', fontSize: 12, textAlign: 'center', marginTop: 24 }}>
           Vorticci Med · Sistema operativo para centros médicos
         </p>
       </div>

@@ -138,10 +138,10 @@ export default function MedicoPage() {
   const timerColor = progreso >= 100 ? '#F09595' : progreso > 80 ? '#FAC775' : '#97C459'
 
   return (
-    <div className="h-screen bg-[#0A0F0D] flex flex-col overflow-hidden">
+    <div className="h-screen bg-[#0F1117] flex flex-col overflow-hidden">
 
       {/* Topbar */}
-      <header className="border-b border-white/10 bg-[#0D1410] px-8 py-3 flex items-center justify-between flex-shrink-0">
+      <header className="border-b border-[#30363D] bg-[#161B22] px-8 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-5">
           <button onClick={() => router.push('/dashboard')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <div className="w-7 h-7 bg-[#1D9E75] rounded-lg flex items-center justify-center">
@@ -178,7 +178,7 @@ export default function MedicoPage() {
           ) : pacienteActual ? (
             <>
               {/* Header paciente */}
-              <div className="px-8 py-5 border-b border-white/8 flex items-start justify-between flex-shrink-0">
+              <div className="px-8 py-5 border-b border-[#30363D] flex items-start justify-between flex-shrink-0">
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full" style={{ background: '#FAC77522', color: '#FAC775' }}>
@@ -208,7 +208,7 @@ export default function MedicoPage() {
                     { label: 'Previsión', value: pacienteActual.prevision },
                     { label: 'Hora cita', value: pacienteActual.hora },
                   ].map(({ label, value }) => (
-                    <div key={label} className="bg-[#161A18] rounded-xl p-4 border border-white/10">
+                    <div key={label} className="bg-[#1C2128] rounded-xl p-4 border border-[#30363D]">
                       <div className="text-white/60 text-xs uppercase tracking-wider mb-1.5 font-semibold">{label}</div>
                       <div className="text-white font-bold text-base">{value}</div>
                     </div>
@@ -217,7 +217,7 @@ export default function MedicoPage() {
 
                 {/* Antecedentes */}
                 {pacienteActual.antecedentes.length > 0 && (
-                  <div className="bg-[#161A18] rounded-xl p-5 border border-white/10">
+                  <div className="bg-[#1C2128] rounded-xl p-5 border border-[#30363D]">
                     <div className="text-white/60 text-xs uppercase tracking-wider mb-3 font-semibold">Antecedentes relevantes</div>
                     <div className="flex flex-wrap gap-2">
                       {pacienteActual.antecedentes.map((a, i) => (
@@ -230,8 +230,8 @@ export default function MedicoPage() {
                 )}
 
                 {/* Notas estructuradas */}
-                <div className="bg-[#161A18] rounded-xl border border-white/10 overflow-hidden">
-                  <div className="px-5 py-3 border-b border-white/8">
+                <div className="bg-[#1C2128] rounded-xl border border-[#30363D] overflow-hidden">
+                  <div className="px-5 py-3 border-b border-[#30363D]">
                     <div className="text-white/60 text-xs uppercase tracking-wider font-semibold">Notas de consulta</div>
                   </div>
                   <div className="divide-y divide-white/8">
@@ -256,7 +256,7 @@ export default function MedicoPage() {
               </div>
 
               {/* Acciones */}
-              <div className="px-8 py-4 border-t border-white/8 bg-[#0D1410] flex gap-3 flex-shrink-0">
+              <div className="px-8 py-4 border-t border-[#30363D] bg-[#161B22] flex gap-3 flex-shrink-0">
                 <button
                   onClick={finalizarConsulta}
                   className="flex-1 bg-[#1D9E75] hover:bg-[#25B587] text-white font-bold py-3.5 rounded-xl text-base transition-colors"
@@ -282,8 +282,8 @@ export default function MedicoPage() {
         </div>
 
         {/* Sidebar cola */}
-        <div className="border-l border-white/8 bg-[#0D1410] flex flex-col flex-shrink-0" style={{ width: '280px' }}>
-          <div className="px-5 py-4 border-b border-white/8">
+        <div className="border-l border-[#30363D] bg-[#161B22] flex flex-col flex-shrink-0" style={{ width: '280px' }}>
+          <div className="px-5 py-4 border-b border-[#30363D]">
             <div className="text-white/50 text-xs uppercase tracking-widest font-semibold mb-1">Cola del día</div>
             <div className="text-white text-xl font-bold">{cola.length} pacientes</div>
           </div>
@@ -307,7 +307,7 @@ export default function MedicoPage() {
                 {siguientes.filter(p => p.id !== siguiente?.id).map((p) => {
                   const est = ESTADO_LABEL[p.estado] ?? { color: '#ffffff', label: p.estado ?? 'Sin estado' }
                   return (
-                    <div key={p.id} className="bg-[#161A18] rounded-xl p-4 border border-white/8">
+                    <div key={p.id} className="bg-[#1C2128] rounded-xl p-4 border border-[#30363D]">
                       <div className="flex items-center justify-between mb-1.5">
                         <span className="text-xs font-semibold" style={{ color: est.color }}>{est.label}</span>
                         <span className="text-white/50 text-sm">{p.hora}</span>

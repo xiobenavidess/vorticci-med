@@ -1,15 +1,24 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/auth.store'
 import { api } from '@/lib/api'
+
+const BG      = '#0F1117'
+const SURFACE = '#161B22'
+const CARD    = '#1C2128'
+const BORDER  = '#30363D'
+const TEXT1   = '#E6EDF3'
+const TEXT2   = '#8B949E'
+const TEXT3   = '#484F58'
+const GREEN   = '#1D9E75'
 
 export default function DashboardPage() {
   const { usuario, logout } = useAuthStore()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
   const [stats, setStats] = useState({ total: 0, confirmadas: 0, enAtencion: 0, noShow: 0 })
+  const [menuAbierto, setMenuAbierto] = useState(false)
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -29,147 +38,142 @@ export default function DashboardPage() {
         enAtencion:  citas.filter((c: any) => c.estado === 'EN_ATENCION').length,
         noShow:      citas.filter((c: any) => c.estado === 'NO_SHOW').length,
       })
-    } catch (e) {
-      console.error('Error cargando stats:', e)
-    }
+    } catch (e) { console.error('Error cargando stats:', e) }
   }
 
   if (!mounted || !usuario) return null
 
   const acciones = [
-    {
-      label: 'Ver agenda de hoy',
-      desc: 'Kanban operacional en tiempo real',
-      href: '/recepcion',
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><rect x="7" y="14" width="3" height="3" rx="0.5"/>
-        </svg>
-      ),
-    },
-    {
-      label: 'Agendar paciente',
-      desc: 'Crear nueva cita en segundos',
-      href: '/recepcion',
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/>
-        </svg>
-      ),
-    },
-    {
-      label: 'Confirmar asistencia',
-      desc: 'Gestionar confirmaciones del día',
-      href: '/recepcion',
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 6L9 17l-5-5"/>
-        </svg>
-      ),
-    },
-    {
-      label: 'Gestionar pacientes',
-      desc: 'Fichas y historial de pacientes',
-      href: '/pacientes',
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
-        </svg>
-      ),
-    },
-    {
-      label: 'Consulta médica',
-      desc: 'Dashboard del médico en box',
-      href: '/medico',
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M9 14h6l1 7H8l1-7z"/><path d="M9 14l-2-3M15 14l2-3"/>
-        </svg>
-      ),
-    },
-    {
-      label: 'Portal del paciente',
-      desc: 'Vista del paciente con sus citas',
-      href: '/paciente',
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/>
-        </svg>
-      ),
-    },
+    { label: 'Ver agenda de hoy',    desc: 'Kanban operacional en tiempo real', href: '/recepcion', emoji: '📋' },
+    { label: 'Agendar paciente',     desc: 'Crear nueva cita en segundos',       href: '/recepcion', emoji: '➕' },
+    { label: 'Confirmar asistencia', desc: 'Gestionar confirmaciones del día',    href: '/recepcion', emoji: '✓'  },
+    { label: 'Gestionar pacientes',  desc: 'Fichas y historial de pacientes',     href: '/pacientes', emoji: '👤' },
+    { label: 'Consulta médica',      desc: 'Dashboard del médico en box',         href: '/medico',    emoji: '🩺' },
+    { label: 'Portal del paciente',  desc: 'Vista del paciente con sus citas',    href: '/paciente',  emoji: '📄' },
   ]
 
   const statCards = [
-    { label: 'Citas hoy',   value: stats.total,       color: '#fff'    },
-    { label: 'Confirmadas', value: stats.confirmadas,  color: '#85B7EB' },
-    { label: 'En atención', value: stats.enAtencion,   color: '#FAC775' },
-    { label: 'No show',     value: stats.noShow,       color: '#F09595' },
+    { label: 'Citas hoy',   value: stats.total,      color: TEXT1    },
+    { label: 'Confirmadas', value: stats.confirmadas, color: '#6B9FD4' },
+    { label: 'En atención', value: stats.enAtencion,  color: '#D4A84B' },
+    { label: 'No show',     value: stats.noShow,      color: '#C46A6A' },
   ]
 
   return (
-    <div className="min-h-screen bg-[#0A0F0D]">
-      {/* Topbar */}
-      <header className="border-b border-[#1D9E75]/20 bg-[#0D1410] px-10 py-5 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-[#1D9E75] rounded-xl flex items-center justify-center">
-            <span className="text-white font-bold text-base">V</span>
+    <div style={{ minHeight: '100dvh', background: BG, fontFamily: 'system-ui, -apple-system, sans-serif' }}>
+
+      {/* NAVBAR */}
+      <header style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}`, position: 'sticky', top: 0, zIndex: 40 }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 20px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 32, height: 32, background: GREEN, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ color: '#fff', fontWeight: 800, fontSize: 14 }}>V</span>
+            </div>
+            <span style={{ color: TEXT1, fontWeight: 700, fontSize: 16 }}>Vorticci Med</span>
           </div>
-          <span className="text-white font-semibold text-xl tracking-tight">Vorticci Med</span>
-        </div>
-        <div className="flex items-center gap-8">
-          <div className="flex items-center gap-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#1D9E75] animate-pulse"></div>
-            <span className="text-[#1D9E75] text-base font-medium">Sistema activo</span>
+
+          {/* Desktop nav */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }} className="hidden-mobile">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: GREEN }} />
+              <span style={{ color: GREEN, fontSize: 13, fontWeight: 500 }}>Sistema activo</span>
+            </div>
+            <span style={{ color: TEXT2, fontSize: 14 }}>{usuario.nombre} {usuario.apellido}</span>
+            <button onClick={() => { logout(); router.push('/login') }} style={{ background: 'none', border: 'none', color: TEXT3, fontSize: 14, cursor: 'pointer' }}>Salir</button>
           </div>
-          <span className="text-white/70 text-base">{usuario.nombre} {usuario.apellido}</span>
-          <button onClick={logout} className="text-white/40 hover:text-white text-base transition-colors">
-            Salir
+
+          {/* Mobile hamburger */}
+          <button onClick={() => setMenuAbierto(!menuAbierto)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, display: 'none' }} className="show-mobile">
+            <div style={{ width: 22, display: 'flex', flexDirection: 'column', gap: 5 }}>
+              <div style={{ height: 2, background: TEXT1, borderRadius: 2, transition: 'all 0.2s', transform: menuAbierto ? 'rotate(45deg) translateY(7px)' : 'none' }} />
+              <div style={{ height: 2, background: TEXT1, borderRadius: 2, opacity: menuAbierto ? 0 : 1, transition: 'all 0.2s' }} />
+              <div style={{ height: 2, background: TEXT1, borderRadius: 2, transition: 'all 0.2s', transform: menuAbierto ? 'rotate(-45deg) translateY(-7px)' : 'none' }} />
+            </div>
           </button>
         </div>
+
+        {/* Mobile menu */}
+        {menuAbierto && (
+          <div style={{ background: SURFACE, borderTop: `1px solid ${BORDER}`, padding: '16px 20px', display: 'none' }} className="show-mobile">
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: GREEN }} />
+              <span style={{ color: GREEN, fontSize: 14 }}>Sistema activo</span>
+            </div>
+            <div style={{ color: TEXT2, fontSize: 14, marginBottom: 16 }}>{usuario.nombre} {usuario.apellido}</div>
+            <button onClick={() => { logout(); router.push('/login') }} style={{ background: 'rgba(196,106,106,0.1)', border: '1px solid rgba(196,106,106,0.3)', color: '#C46A6A', borderRadius: 8, padding: '10px 16px', fontSize: 14, cursor: 'pointer', width: '100%' }}>
+              Cerrar sesión
+            </button>
+          </div>
+        )}
       </header>
 
-      <main className="px-10 py-12 max-w-7xl mx-auto">
+      <style>{`
+        @media (max-width: 640px) {
+          .hidden-mobile { display: none !important; }
+          .show-mobile { display: flex !important; }
+          .show-mobile-block { display: block !important; }
+          .grid-stats { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-acciones { grid-template-columns: 1fr !important; }
+          .main-padding { padding: 24px 16px !important; }
+          .stat-value { font-size: 36px !important; }
+          .accion-card { flex-direction: row !important; align-items: center !important; gap: 16px !important; padding: 18px 16px !important; }
+          .accion-icon { width: 44px !important; height: 44px !important; flex-shrink: 0 !important; }
+          .titulo-saludo { font-size: 32px !important; }
+        }
+        @media (min-width: 641px) {
+          .hidden-mobile { display: flex !important; }
+          .show-mobile { display: none !important; }
+          .show-mobile-block { display: none !important; }
+          .grid-stats { grid-template-columns: repeat(4, 1fr) !important; }
+          .grid-acciones { grid-template-columns: repeat(3, 1fr) !important; }
+          .main-padding { padding: 48px 40px !important; }
+        }
+      `}</style>
+
+      <main className="main-padding" style={{ maxWidth: 1200, margin: '0 auto' }}>
+
         {/* Saludo */}
-        <div className="mb-12">
-          <h1 className="text-white text-5xl font-bold mb-3">
+        <div style={{ marginBottom: 32 }}>
+          <h1 className="titulo-saludo" style={{ color: TEXT1, fontSize: 42, fontWeight: 700, margin: '0 0 8px 0', lineHeight: 1.2 }}>
             Hola, {usuario.nombre} 👋
           </h1>
-          <p className="text-white/50 text-lg">
+          <p style={{ color: TEXT2, fontSize: 15, margin: 0 }}>
             {new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })}
             {' · '}
-            <span className="text-[#1D9E75] font-medium">{usuario.rol.replace('_', ' ')}</span>
+            <span style={{ color: GREEN, fontWeight: 600 }}>{usuario.rol.replace('_', ' ')}</span>
           </p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-5 mb-12">
+        <div className="grid-stats" style={{ display: 'grid', gap: 12, marginBottom: 32 }}>
           {statCards.map(({ label, value, color }) => (
-            <div key={label} className="bg-[#182420] border border-[#1D9E75]/20 rounded-2xl p-7">
-              <div className="text-5xl font-bold mb-3" style={{ color }}>{value}</div>
-              <div className="text-[#5DCAA5] text-base font-medium">{label}</div>
+            <div key={label} style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, padding: '20px 20px' }}>
+              <div className="stat-value" style={{ fontSize: 44, fontWeight: 700, color, lineHeight: 1, marginBottom: 6 }}>{value}</div>
+              <div style={{ color: GREEN, fontSize: 13, fontWeight: 500 }}>{label}</div>
             </div>
           ))}
         </div>
 
         {/* Acciones */}
-        <p className="text-white/40 text-sm font-semibold uppercase tracking-widest mb-6">
+        <p style={{ color: TEXT3, fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 16 }}>
           ¿Qué deseas hacer?
         </p>
-        <div className="grid grid-cols-3 gap-5">
-          {acciones.map(({ label, desc, icon, href }) => (
+        <div className="grid-acciones" style={{ display: 'grid', gap: 10 }}>
+          {acciones.map(({ label, desc, emoji, href }) => (
             <button
               key={label}
               onClick={() => router.push(href)}
-              className="flex flex-col gap-5 bg-[#182420] border border-[#1D9E75]/20 hover:border-[#1D9E75] hover:bg-[#1D2E27] rounded-2xl p-8 text-left transition-all group"
+              className="accion-card"
+              style={{ background: CARD, border: `1px solid ${BORDER}`, borderRadius: 14, padding: '24px 20px', cursor: 'pointer', textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 16, transition: 'border-color 0.15s, background 0.15s' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = GREEN; (e.currentTarget as HTMLElement).style.background = '#21262D' }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = BORDER; (e.currentTarget as HTMLElement).style.background = CARD }}
             >
-              <div className="w-12 h-12 bg-[#1D9E75]/10 rounded-xl flex items-center justify-center">
-                {icon}
+              <div className="accion-icon" style={{ width: 48, height: 48, background: `${GREEN}18`, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>
+                {emoji}
               </div>
               <div>
-                <div className="text-white font-semibold text-lg mb-2 group-hover:text-[#1D9E75] transition-colors">
-                  {label}
-                </div>
-                <div className="text-white/50 text-sm leading-relaxed">{desc}</div>
+                <div style={{ color: TEXT1, fontWeight: 600, fontSize: 16, marginBottom: 4 }}>{label}</div>
+                <div style={{ color: TEXT2, fontSize: 13, lineHeight: 1.5 }}>{desc}</div>
               </div>
             </button>
           ))}

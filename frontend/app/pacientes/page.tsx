@@ -41,7 +41,7 @@ function formatHora(f: string) {
 }
 
 const INPUT = `
-  width: 100%; background: #161A18; border: 1px solid rgba(255,255,255,0.1);
+  width: 100%; background: #1C2128; border: 1px solid #30363D;
   border-radius: 10px; padding: 10px 14px; color: #fff; font-size: 14px;
   outline: none; font-family: inherit;
 `
@@ -123,14 +123,14 @@ export default function PacientesPage() {
 
   if (!mounted) return null
 
-  const CARD = { background: '#0D1410', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12 }
+  const CARD = { background: '#161B22', border: '1px solid #30363D', borderRadius: 12 }
   const LABEL_S = { fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' as const, color: '#64748B', marginBottom: 6 }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0A0F0D', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', background: '#0F1117', color: '#fff', fontFamily: 'system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
 
       {/* Navbar */}
-      <header style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', borderBottom: '1px solid rgba(255,255,255,0.08)', background: '#0D1410', flexShrink: 0 }}>
+      <header style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 28px', borderBottom: '1px solid #30363D', background: '#161B22', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button onClick={() => router.push('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer' }}>
             <div style={{ width: 28, height: 28, borderRadius: 6, background: '#1D9E75', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 700, color: '#fff' }}>V</div>
@@ -140,7 +140,7 @@ export default function PacientesPage() {
           <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)' }}>Pacientes</span>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => router.push('/recepcion')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.6)', borderRadius: 8, padding: '7px 14px', fontSize: 13, cursor: 'pointer' }}>
+          <button onClick={() => router.push('/recepcion')} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #30363D', color: 'rgba(255,255,255,0.6)', borderRadius: 8, padding: '7px 14px', fontSize: 13, cursor: 'pointer' }}>
             ← Recepción
           </button>
         </div>
@@ -149,7 +149,7 @@ export default function PacientesPage() {
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
         {/* Columna izquierda — listado */}
-        <div style={{ width: seleccionado ? 380 : '100%', borderRight: seleccionado ? '1px solid rgba(255,255,255,0.08)' : 'none', display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'width 0.2s' }}>
+        <div style={{ width: seleccionado ? 380 : '100%', borderRight: seleccionado ? '1px solid #30363D' : 'none', display: 'flex', flexDirection: 'column', overflow: 'hidden', transition: 'width 0.2s' }}>
 
           {/* Header listado */}
           <div style={{ padding: '24px 24px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
@@ -163,7 +163,7 @@ export default function PacientesPage() {
               placeholder="Buscar por nombre o RUT..."
               value={query}
               onChange={e => setQuery(e.target.value)}
-              style={{ width: '100%', background: '#161A18', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+              style={{ width: '100%', background: '#1C2128', border: '1px solid #30363D', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
             />
           </div>
 
@@ -203,12 +203,12 @@ export default function PacientesPage() {
           {pages > 1 && !query && (
             <div style={{ padding: '12px 16px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: page === 1 ? '#333' : '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: page === 1 ? 'not-allowed' : 'pointer' }}>
+                style={{ background: 'none', border: '1px solid #30363D', color: page === 1 ? '#333' : '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: page === 1 ? 'not-allowed' : 'pointer' }}>
                 ← Anterior
               </button>
               <span style={{ fontSize: 12, color: '#64748B' }}>Página {page} de {pages}</span>
               <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page === pages}
-                style={{ background: 'none', border: '1px solid rgba(255,255,255,0.1)', color: page === pages ? '#333' : '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: page === pages ? 'not-allowed' : 'pointer' }}>
+                style={{ background: 'none', border: '1px solid #30363D', color: page === pages ? '#333' : '#fff', borderRadius: 8, padding: '6px 14px', fontSize: 13, cursor: page === pages ? 'not-allowed' : 'pointer' }}>
                 Siguiente →
               </button>
             </div>
@@ -229,7 +229,7 @@ export default function PacientesPage() {
                 {!editando ? (
                   <>
                     <button onClick={() => setEditando(true)}
-                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}>
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid #30363D', color: '#fff', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}>
                       Editar
                     </button>
                     <button onClick={() => setSeleccionado(null)}
@@ -238,7 +238,7 @@ export default function PacientesPage() {
                 ) : (
                   <>
                     <button onClick={() => setEditando(false)}
-                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}>
+                      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid #30363D', color: '#fff', borderRadius: 8, padding: '8px 16px', fontSize: 13, cursor: 'pointer' }}>
                       Cancelar
                     </button>
                     <button onClick={guardarCambios} disabled={guardando}
@@ -263,22 +263,22 @@ export default function PacientesPage() {
                     </div>
                     <div>
                       <div style={LABEL_S}>Apellido</div>
-                      <input style={{ width: '100%', background: '#161A18', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
+                      <input style={{ width: '100%', background: '#1C2128', border: '1px solid #30363D', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
                         value={form.apellido ?? ''} onChange={e => setForm(f => ({ ...f, apellido: e.target.value }))} />
                     </div>
                     <div>
                       <div style={LABEL_S}>Teléfono</div>
-                      <input style={{ width: '100%', background: '#161A18', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
+                      <input style={{ width: '100%', background: '#1C2128', border: '1px solid #30363D', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
                         value={form.telefono ?? ''} onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))} />
                     </div>
                     <div>
                       <div style={LABEL_S}>Email</div>
-                      <input style={{ width: '100%', background: '#161A18', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
+                      <input style={{ width: '100%', background: '#1C2128', border: '1px solid #30363D', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
                         value={form.email ?? ''} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
                       <div style={LABEL_S}>Previsión</div>
-                      <select style={{ width: '100%', background: '#161A18', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
+                      <select style={{ width: '100%', background: '#1C2128', border: '1px solid #30363D', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, outline: 'none', fontFamily: 'inherit' }}
                         value={form.prevision ?? ''} onChange={e => setForm(f => ({ ...f, prevision: e.target.value }))}>
                         <option value="">Seleccionar...</option>
                         {['FONASA A','FONASA B','FONASA C','FONASA D','Isapre Cruz Blanca','Isapre Banmédica','Isapre Colmena','Isapre Consalud','Particular'].map(p => (
