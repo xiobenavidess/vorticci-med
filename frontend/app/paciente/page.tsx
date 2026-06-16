@@ -54,8 +54,8 @@ export default function PacientePage() {
   async function cargarDatos() {
     try {
       setCargando(true)
-      if (!usuario?.paciente_id) return
-      const citasRes = await api.citas.porPaciente(usuario.paciente_id)
+      if (!usuario?.id) return
+      const citasRes = await api.citas.porPaciente(usuario.id)
       setCitas(citasRes ?? [])
     } catch (e) {
       console.error('Error cargando datos paciente:', e)

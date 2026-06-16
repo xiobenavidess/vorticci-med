@@ -41,11 +41,11 @@ export default function ModalAgendarCita({ onClose, onCreada, centroId, profesio
   const [duracion, setDuracion] = useState('30')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const searchRef = useRef<NodeJS.Timeout>()
+  const searchRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (query.length < 2) { setResultados([]); return }
-    clearTimeout(searchRef.current)
+    if (searchRef.current) clearTimeout(searchRef.current)
     searchRef.current = setTimeout(async () => {
       try { setResultados(await api.pacientes.buscar(query)) }
       catch { setResultados([]) }
