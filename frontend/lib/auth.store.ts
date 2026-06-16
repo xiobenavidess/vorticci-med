@@ -15,6 +15,7 @@ interface AuthStore {
   usuario: Usuario | null
   token: string | null
   loading: boolean
+  init: () => void
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
 }
@@ -25,6 +26,11 @@ export const useAuthStore = create<AuthStore>()(
       usuario: null,
       token: null,
       loading: false,
+
+      init: () => {
+        const token = localStorage.getItem('access_token')
+        if (token) set({ token })
+      },
 
       login: async (email, password) => {
         set({ loading: true })
@@ -49,7 +55,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: 'vorticci-auth',
-      partialize: (s) => ({ usuario: s.usuario }),
+      partialize: (s) => ({ usuario: s.usuario, token: s.token }),
     },
   ),
 )
