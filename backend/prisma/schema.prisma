@@ -1,0 +1,228 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model CentroMedico {
+  id            String    @id @default(uuid())
+  nombre        String
+  rut           String    @unique
+  direccion     String
+  telefono      String?
+  email         String?
+  activo        Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  usuarios      Usuario[]
+  profesionales Profesional[]
+  citas         Cita[]
+
+  @@map("centros_medicos")
+}
+
+model Usuario {
+  id            String    @id @default(uuid())
+  centro_id     String?
+  email         String    @unique
+  password_hash String
+  nombre        String
+  apellido      String
+  rol           Rol
+  activo        Boolean   @default(true)
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  centro         CentroMedico?  @relation(fields: [centro_id], references: [id])
+  profesional    Profesional?
+  paciente       Paciente?
+  refresh_tokens RefreshToken[]
+  eventos        Evento[]
+
+  @@map("usuarios")
+  @@index([email])
+  @@index([centro_id, rol])
+}
+
+model RefreshToken {
+  id         String    @id @default(uuid())
+  usuario_id String
+  token      String    @unique
+  expires_at DateTime
+  revoked_at DateTime?
+  created_at DateTime  @default(now())
+
+  usuario    Usuario   @relation(fields: [usuario_id], references: [id])
+
+  @@map("refresh_tokens")
+  @@index([token])
+}
+
+model Paciente {
+  id               String    @id @default(uuid())
+  usuario_id       String?   @unique
+  rut              String    @unique
+  nombre           String
+  apellido         String
+  fecha_nacimiento DateTime
+  telefono         String
+  email            String?
+  prevision        String?
+  activo           Boolean   @default(true)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  deleted_at       DateTime?
+
+  usuario        Usuario?       @relation(fields: [usuario_id], references: [id])
+  citas          Cita[]
+  notificaciones Notificacion[]
+
+  @@map("pacientes")
+  @@index([rut])
+}
+
+model Profesional {
+  id           String    @id @default(uuid())
+  usuario_id   String    @unique
+  centro_id    String
+  especialidad String
+  rut          String    @unique
+  color_agenda String    @default("#1D9E75")
+  activo       Boolean   @default(true)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @updatedAt
+  deleted_at   DateTime?
+
+  usuario  Usuario      @relation(fields: [usuario_id], references: [id])
+  centro   CentroMedico @relation(fields: [centro_id], references: [id])
+  horarios Horario[]
+  citas    Cita[]
+
+  @@map("profesionales")
+  @@index([centro_id])
+}
+
+model Horario {
+  id             String  @id @default(uuid())
+  profesional_id String
+  dia_semana     Int
+  hora_inicio    String
+  hora_fin       String
+  duracion_cita  Int     @default(30)
+  activo         Boolean @default(true)
+
+  profesional Profesional @relation(fields: [profesional_id], references: [id])
+
+  @@map("horarios")
+  @@unique([profesional_id, dia_semana])
+}
+
+model Cita {
+  id             String     @id @default(uuid())
+  centro_id      String
+  paciente_id    String
+  profesional_id String
+  fecha_hora     DateTime
+  duracion       Int        @default(30)
+  estado         EstadoCita @default(CREADA)
+  motivo         String?
+  folio          String     @unique
+  created_at     DateTime   @default(now())
+  updated_at     DateTime   @updatedAt
+  deleted_at     DateTime?
+
+  centro      CentroMedico   @relation(fields: [centro_id], references: [id])
+  paciente    Paciente       @relation(fields: [paciente_id], references: [id])
+  profesional Profesional    @relation(fields: [profesional_id], references: [id])
+  eventos     Evento[]
+  notificaciones Notificacion[]
+
+  @@map("citas")
+  @@index([centro_id, fecha_hora])
+  @@index([profesional_id, fecha_hora])
+  @@index([estado])
+}
+
+model Evento {
+  id         String     @id @default(uuid())
+  centro_id  String?
+  cita_id    String?
+  usuario_id String?
+  tipo       TipoEvento
+  payload    Json       @default("{}")
+  created_at DateTime   @default(now())
+
+  cita    Cita?    @relation(fields: [cita_id], references: [id])
+  usuario Usuario? @relation(fields: [usuario_id], references: [id])
+
+  @@map("eventos")
+  @@index([cita_id])
+}
+
+model Notificacion {
+  id          String             @id @default(uuid())
+  paciente_id String?
+  cita_id     String?
+  canal       Canal
+  estado      EstadoNotificacion @default(PENDIENTE)
+  destinatario String
+  contenido   String
+  created_at  DateTime           @default(now())
+
+  paciente Paciente? @relation(fields: [paciente_id], references: [id])
+  cita     Cita?     @relation(fields: [cita_id], references: [id])
+
+  @@map("notificaciones")
+}
+
+enum Rol {
+  SUPER_ADMIN
+  ADMIN_CENTRO
+  RECEPCION
+  MEDICO
+  PACIENTE
+}
+
+enum EstadoCita {
+  CREADA
+  CONFIRMADA
+  EN_CAMINO
+  CHECK_IN
+  EN_ATENCION
+  FINALIZADA
+  SEGUIMIENTO
+  CANCELADA
+  REAGENDADA
+  NO_SHOW
+}
+
+enum TipoEvento {
+  CITA_CREADA
+  CITA_CONFIRMADA
+  CITA_CANCELADA
+  CITA_CHECK_IN
+  CITA_INICIADA
+  CITA_FINALIZADA
+  CITA_NO_SHOW
+  NOTIFICACION_ENVIADA
+}
+
+enum Canal {
+  WHATSAPP
+  EMAIL
+  SMS
+}
+
+enum EstadoNotificacion {
+  PENDIENTE
+  ENVIADA
+  ENTREGADA
+  FALLIDA
+}
