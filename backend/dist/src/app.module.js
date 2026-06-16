@@ -11,6 +11,9 @@ const common_1 = require("@nestjs/common");
 const config_1 = require("@nestjs/config");
 const prisma_module_1 = require("./prisma/prisma.module");
 const auth_module_1 = require("./auth/auth.module");
+const citas_module_1 = require("./citas/citas.module");
+const pacientes_module_1 = require("./pacientes/pacientes.module");
+const fichas_module_1 = require("./fichas/fichas.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -20,6 +23,9 @@ exports.AppModule = AppModule = __decorate([
             config_1.ConfigModule.forRoot({ isGlobal: true }),
             prisma_module_1.PrismaModule,
             auth_module_1.AuthModule,
+            citas_module_1.CitasModule,
+            pacientes_module_1.PacientesModule,
+            fichas_module_1.FichasModule,
         ],
     })
 ], AppModule);

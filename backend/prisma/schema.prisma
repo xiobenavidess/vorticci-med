@@ -83,6 +83,7 @@ model Paciente {
   usuario        Usuario?       @relation(fields: [usuario_id], references: [id])
   citas          Cita[]
   notificaciones Notificacion[]
+  fichas         FichaClinica[]
 
   @@map("pacientes")
   @@index([rut])
@@ -104,6 +105,7 @@ model Profesional {
   centro   CentroMedico @relation(fields: [centro_id], references: [id])
   horarios Horario[]
   citas    Cita[]
+  fichas   FichaClinica[]
 
   @@map("profesionales")
   @@index([centro_id])
@@ -138,11 +140,12 @@ model Cita {
   updated_at     DateTime   @updatedAt
   deleted_at     DateTime?
 
-  centro      CentroMedico   @relation(fields: [centro_id], references: [id])
-  paciente    Paciente       @relation(fields: [paciente_id], references: [id])
-  profesional Profesional    @relation(fields: [profesional_id], references: [id])
-  eventos     Evento[]
+  centro         CentroMedico   @relation(fields: [centro_id], references: [id])
+  paciente       Paciente       @relation(fields: [paciente_id], references: [id])
+  profesional    Profesional    @relation(fields: [profesional_id], references: [id])
+  eventos        Evento[]
   notificaciones Notificacion[]
+  ficha          FichaClinica?
 
   @@map("citas")
   @@index([centro_id, fecha_hora])
@@ -167,19 +170,38 @@ model Evento {
 }
 
 model Notificacion {
-  id          String             @id @default(uuid())
-  paciente_id String?
-  cita_id     String?
-  canal       Canal
-  estado      EstadoNotificacion @default(PENDIENTE)
+  id           String             @id @default(uuid())
+  paciente_id  String?
+  cita_id      String?
+  canal        Canal
+  estado       EstadoNotificacion @default(PENDIENTE)
   destinatario String
-  contenido   String
-  created_at  DateTime           @default(now())
+  contenido    String
+  created_at   DateTime           @default(now())
 
   paciente Paciente? @relation(fields: [paciente_id], references: [id])
   cita     Cita?     @relation(fields: [cita_id], references: [id])
 
   @@map("notificaciones")
+}
+
+model FichaClinica {
+  id              String   @id @default(uuid())
+  cita_id         String   @unique
+  paciente_id     String
+  profesional_id  String
+  diagnostico     String?
+  indicaciones    String?
+  proximo_control String?
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  cita        Cita        @relation(fields: [cita_id], references: [id])
+  paciente    Paciente    @relation(fields: [paciente_id], references: [id])
+  profesional Profesional @relation(fields: [profesional_id], references: [id])
+
+  @@map("fichas_clinicas")
+  @@index([paciente_id])
 }
 
 enum Rol {

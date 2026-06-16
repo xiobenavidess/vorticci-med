@@ -16,10 +16,11 @@ export default function LoginPage() {
     setError('')
     try {
       await login(email, password)
-      router.push('/dashboard')
     } catch {
       setError('Email o contraseña incorrectos')
+      return
     }
+    router.push('/dashboard')
   }
 
   return (

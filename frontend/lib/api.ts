@@ -1,36 +1,59 @@
-import axios from 'axios'
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'
 
-export const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
-  headers: { 'Content-Type': 'application/json' },
-})
+function getToken() {
+  if (typeof window === 'undefined') return null
+  return localStorage.getItem('access_token')
+}
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
-  return config
-})
+async function apiFetch(path: string, options: RequestInit = {}) {
+  const token = getToken()
+  const res = await fetch(`${BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+  })
+  const json = await res.json()
+  if (!res.ok) throw new Error(`API error ${res.status}`)
+  return json
+}
 
-api.interceptors.response.use(
-  (res) => res,
-  async (error) => {
-    const original = error.config
-    if (error.response?.status === 401 && !original._retry) {
-      original._retry = true
-      try {
-        const refresh = localStorage.getItem('refresh_token')
-        const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/auth/refresh`,
-          { refresh_token: refresh },
-        )
-        localStorage.setItem('access_token', data.access_token)
-        original.headers.Authorization = `Bearer ${data.access_token}`
-        return api(original)
-      } catch {
-        localStorage.clear()
-        window.location.href = '/login'
-      }
-    }
-    return Promise.reject(error)
+export const api = {
+  post: (path: string, body: any) =>
+    apiFetch(path, { method: 'POST', body: JSON.stringify(body) }),
+
+  pacientes: {
+    buscar: (q: string) =>
+      apiFetch(`/pacientes/buscar?q=${encodeURIComponent(q)}`),
+    crear: (data: any) =>
+      apiFetch('/pacientes', { method: 'POST', body: JSON.stringify(data) }),
+    listar: (page = 1) =>
+      apiFetch(`/pacientes?page=${page}`),
+    getById: (id: string) =>
+      apiFetch(`/pacientes/${id}`),
+    actualizar: (id: string, data: any) =>
+      apiFetch(`/pacientes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
   },
-)
+
+  citas: {
+    delDia: (fecha?: string) =>
+      apiFetch(`/citas/dia${fecha ? `?fecha=${fecha}` : ''}`),
+    updateEstado: (id: string, estado: string) =>
+      apiFetch(`/citas/${id}/estado`, {
+        method: 'PATCH',
+        body: JSON.stringify({ estado }),
+      }),
+    porPaciente: (pacienteId: string) =>
+      apiFetch(`/citas/paciente/${pacienteId}`),
+    crear: (data: any) =>
+      apiFetch('/citas', { method: 'POST', body: JSON.stringify(data) }),
+  },
+}
+// Fichas clínicas
+export const getFicha = (citaId: string) =>
+  api.get(`/fichas/cita/${citaId}`).then(r => r.data);
+
+export const guardarFicha = (citaId: string, data: { diagnostico?: string; indicaciones?: string; proximo_control?: string }) =>
+  api.post(`/fichas/cita/${citaId}`, data).then(r => r.data);

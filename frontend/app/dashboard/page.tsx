@@ -1,20 +1,42 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/lib/auth.store'
+import { api } from '@/lib/api'
 
 export default function DashboardPage() {
   const { usuario, logout } = useAuthStore()
   const router = useRouter()
+  const [mounted, setMounted] = useState(false)
+  const [stats, setStats] = useState({ total: 0, confirmadas: 0, enAtencion: 0, noShow: 0 })
+
+  useEffect(() => { setMounted(true) }, [])
 
   useEffect(() => {
-    if (!usuario) router.push('/login')
-  }, [usuario, router])
+    if (!mounted) return
+    const token = localStorage.getItem('access_token')
+    if (!token) { router.push('/login'); return }
+    cargarStats()
+  }, [mounted])
 
-  if (!usuario) return null
+  const cargarStats = async () => {
+    try {
+      const citas = await api.citas.delDia()
+      setStats({
+        total:       citas.length,
+        confirmadas: citas.filter((c: any) => c.estado === 'CONFIRMADA').length,
+        enAtencion:  citas.filter((c: any) => c.estado === 'EN_ATENCION').length,
+        noShow:      citas.filter((c: any) => c.estado === 'NO_SHOW').length,
+      })
+    } catch (e) {
+      console.error('Error cargando stats:', e)
+    }
+  }
 
- const acciones = [
+  if (!mounted || !usuario) return null
+
+  const acciones = [
     {
       label: 'Ver agenda de hoy',
       desc: 'Kanban operacional en tiempo real',
@@ -46,16 +68,6 @@ export default function DashboardPage() {
       ),
     },
     {
-      label: 'Revisar indicadores',
-      desc: 'KPIs y métricas operacionales',
-      href: '/dashboard',
-      icon: (
-        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>
-        </svg>
-      ),
-    },
-    {
       label: 'Gestionar pacientes',
       desc: 'Fichas y historial de pacientes',
       href: '/pacientes',
@@ -66,22 +78,32 @@ export default function DashboardPage() {
       ),
     },
     {
-      label: 'Ver profesionales',
-      desc: 'Agenda y disponibilidad',
-      href: '/profesionales',
+      label: 'Consulta médica',
+      desc: 'Dashboard del médico en box',
+      href: '/medico',
       icon: (
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z"/><path d="M9 14h6l1 7H8l1-7z"/><path d="M9 14l-2-3M15 14l2-3"/>
         </svg>
       ),
     },
+    {
+      label: 'Portal del paciente',
+      desc: 'Vista del paciente con sus citas',
+      href: '/paciente',
+      icon: (
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 9h6M9 12h6M9 15h4"/>
+        </svg>
+      ),
+    },
   ]
 
-  const stats = [
-    { label: 'Citas hoy', value: '—' },
-    { label: 'Confirmadas', value: '—' },
-    { label: 'En atención', value: '—' },
-    { label: 'No show', value: '—' },
+  const statCards = [
+    { label: 'Citas hoy',   value: stats.total,       color: '#fff'    },
+    { label: 'Confirmadas', value: stats.confirmadas,  color: '#85B7EB' },
+    { label: 'En atención', value: stats.enAtencion,   color: '#FAC775' },
+    { label: 'No show',     value: stats.noShow,       color: '#F09595' },
   ]
 
   return (
@@ -121,9 +143,9 @@ export default function DashboardPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-4 gap-5 mb-12">
-          {stats.map(({ label, value }) => (
+          {statCards.map(({ label, value, color }) => (
             <div key={label} className="bg-[#182420] border border-[#1D9E75]/20 rounded-2xl p-7">
-              <div className="text-5xl font-bold text-white mb-3">{value}</div>
+              <div className="text-5xl font-bold mb-3" style={{ color }}>{value}</div>
               <div className="text-[#5DCAA5] text-base font-medium">{label}</div>
             </div>
           ))}
@@ -141,8 +163,8 @@ export default function DashboardPage() {
               className="flex flex-col gap-5 bg-[#182420] border border-[#1D9E75]/20 hover:border-[#1D9E75] hover:bg-[#1D2E27] rounded-2xl p-8 text-left transition-all group"
             >
               <div className="w-12 h-12 bg-[#1D9E75]/10 rounded-xl flex items-center justify-center">
-  {icon}
-</div>
+                {icon}
+              </div>
               <div>
                 <div className="text-white font-semibold text-lg mb-2 group-hover:text-[#1D9E75] transition-colors">
                   {label}
