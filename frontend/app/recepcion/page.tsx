@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
@@ -8,12 +7,12 @@ import { api } from '@/lib/api'
 import ModalAgendarCita from '@/components/ModalAgendarCita'
 
 const COLUMNAS = [
-  { id: 'CREADA',      label: 'Esperando',   accent: '#D3D1C7' },
-  { id: 'CONFIRMADA',  label: 'Confirmados', accent: '#85B7EB' },
-  { id: 'CHECK_IN',    label: 'Check-in',    accent: '#AFA9EC' },
-  { id: 'EN_ATENCION', label: 'En atención', accent: '#FAC775' },
-  { id: 'FINALIZADA',  label: 'Finalizados', accent: '#97C459' },
-  { id: 'NO_SHOW',     label: 'No show',     accent: '#F09595' },
+  { id: 'CREADA',      label: 'Esperando',   accent: '#8B92A5', bg: '#8B92A515' },
+  { id: 'CONFIRMADA',  label: 'Confirmados', accent: '#6B9FD4', bg: '#6B9FD415' },
+  { id: 'CHECK_IN',    label: 'Check-in',    accent: '#9B8FD4', bg: '#9B8FD415' },
+  { id: 'EN_ATENCION', label: 'En atención', accent: '#D4A84B', bg: '#D4A84B15' },
+  { id: 'FINALIZADA',  label: 'Finalizados', accent: '#5EA87A', bg: '#5EA87A15' },
+  { id: 'NO_SHOW',     label: 'No show',     accent: '#C46A6A', bg: '#C46A6A15' },
 ]
 
 const SIGUIENTE_ESTADO: Record<string, string> = {
@@ -49,9 +48,9 @@ function minutosDesde(iso: string) {
 
 function TiempoEspera({ desde }: { desde: string }) {
   const mins = minutosDesde(desde)
-  const color = mins > 30 ? '#F09595' : mins > 15 ? '#FAC775' : '#97C459'
+  const color = mins > 30 ? '#C46A6A' : mins > 15 ? '#D4A84B' : '#5EA87A'
   return (
-    <span className="text-sm font-semibold px-2.5 py-0.5 rounded-full" style={{ background: `${color}22`, color }}>
+    <span style={{ fontSize: 12, fontWeight: 600, padding: '2px 10px', borderRadius: 20, background: `${color}20`, color }}>
       {mins} min
     </span>
   )
@@ -71,7 +70,7 @@ function citasABoard(citas: any[]): Board {
         paciente: c.paciente,
         profesional: {
           especialidad: c.profesional.especialidad,
-          color_agenda: c.profesional.color_agenda ?? '#1D9E75',
+          color_agenda: c.profesional.color_agenda ?? '#5EA87A',
           usuario: c.profesional.usuario,
         },
       })
@@ -82,6 +81,16 @@ function citasABoard(citas: any[]): Board {
 
 const CENTRO_ID      = 'a1b2c3d4-0000-0000-0000-000000000001'
 const PROFESIONAL_ID = 'b2c3d4e5-0000-0000-0000-000000000002'
+
+// Design tokens
+const BG      = '#0F1117'
+const SURFACE = '#1A1F27'
+const CARD    = '#222931'
+const BORDER  = '#3D444D'
+const BORDER2 = '#2D333B'
+const TEXT1   = '#E6EDF3'
+const TEXT2   = '#C8D0D8'
+const TEXT3   = '#8B95A0'
 
 export default function RecepcionPage() {
   const { usuario } = useAuthStore()
@@ -150,7 +159,7 @@ export default function RecepcionPage() {
   const totalCitas = Object.values(board).flat().length
 
   return (
-    <div className="min-h-screen bg-[#0A0F0D] flex flex-col">
+    <div style={{ minHeight: '100vh', background: BG, display: 'flex', flexDirection: 'column', fontFamily: 'system-ui, -apple-system, sans-serif' }}>
 
       {modalAbierto && (
         <ModalAgendarCita
@@ -161,78 +170,81 @@ export default function RecepcionPage() {
         />
       )}
 
-      <header className="border-b border-white/10 bg-[#0D1410] px-8 py-4 flex items-center justify-between flex-shrink-0">
-        <div className="flex items-center gap-5">
-          <button onClick={() => router.push('/dashboard')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-[#1D9E75] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">V</span>
+      {/* NAVBAR */}
+      <header style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}`, padding: '0 32px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <button onClick={() => router.push('/dashboard')} style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'none', border: 'none', cursor: 'pointer' }}>
+            <div style={{ width: 30, height: 30, background: '#1D9E75', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>V</span>
             </div>
-            <span className="text-white font-semibold text-base">Vorticci Med</span>
+            <span style={{ color: TEXT1, fontWeight: 600, fontSize: 15 }}>Vorticci Med</span>
           </button>
-          <div className="w-px h-4 bg-white/10"></div>
-          <span className="text-white/70 text-base">Recepción</span>
-          <span className="text-white/30 text-sm hidden md:block">
+          <div style={{ width: 1, height: 16, background: BORDER }} />
+          <span style={{ color: TEXT2, fontSize: 14 }}>Recepción</span>
+          <span style={{ color: TEXT3, fontSize: 13 }}>
             {new Date().toLocaleDateString('es-CL', { weekday: 'long', day: 'numeric', month: 'long' })}
           </span>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-[#1D9E75] animate-pulse"></div>
-            <span className="text-[#1D9E75] text-base font-medium">{totalCitas} citas</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#1D9E75' }} />
+            <span style={{ color: TEXT2, fontSize: 14 }}>{totalCitas} citas hoy</span>
           </div>
           <button
             onClick={() => setModalAbierto(true)}
-            className="bg-[#1D9E75] hover:bg-[#25B587] text-white text-base font-semibold px-5 py-2 rounded-xl transition-colors"
+            style={{ background: '#1D9E75', color: '#fff', fontWeight: 600, fontSize: 14, padding: '8px 18px', borderRadius: 8, border: 'none', cursor: 'pointer' }}
           >
             + Nueva cita
           </button>
         </div>
       </header>
 
-      <div className="px-8 py-5 border-b border-white/8 bg-[#0D1410] flex-shrink-0">
-        <div className="flex items-center gap-3 mb-3">
-          <h2 className="text-white text-2xl font-bold">Hoy</h2>
-          <span className="text-white/30 text-lg">
+      {/* SUBHEADER stats */}
+      <div style={{ background: SURFACE, borderBottom: `1px solid ${BORDER}`, padding: '14px 32px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <span style={{ color: TEXT1, fontSize: 20, fontWeight: 700 }}>Hoy</span>
+          <span style={{ color: TEXT3, fontSize: 16 }}>
             {new Date().toLocaleDateString('es-CL', { day: 'numeric', month: 'long' })}
           </span>
         </div>
-        <div className="flex items-center gap-6">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
           {[
-            { value: totalCitas,               label: 'citas hoy',   color: '#fff'    },
-            { value: board.CHECK_IN.length,    label: 'en sala',     color: '#AFA9EC' },
-            { value: board.EN_ATENCION.length, label: 'en consulta', color: '#FAC775' },
-            { value: board.FINALIZADA.length,  label: 'completadas', color: '#97C459' },
-            { value: board.NO_SHOW.length,     label: 'no show',     color: '#F09595' },
+            { value: totalCitas,               label: 'citas hoy',   color: TEXT1    },
+            { value: board.CHECK_IN.length,    label: 'en sala',     color: '#9B8FD4' },
+            { value: board.EN_ATENCION.length, label: 'en consulta', color: '#D4A84B' },
+            { value: board.FINALIZADA.length,  label: 'completadas', color: '#5EA87A' },
+            { value: board.NO_SHOW.length,     label: 'no show',     color: '#C46A6A' },
           ].map(({ value, label, color }, i) => (
-            <div key={i} className="flex items-center gap-2">
-              {i > 0 && <div className="w-px h-6 bg-white/10 mr-4" />}
-              <span className="text-3xl font-bold" style={{ color }}>{value}</span>
-              <span className="text-white/40 text-sm uppercase tracking-wide">{label}</span>
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 24, marginRight: 24, borderRight: i < 4 ? `1px solid ${BORDER}` : 'none' }}>
+              <span style={{ fontSize: 26, fontWeight: 700, color, lineHeight: 1 }}>{value}</span>
+              <span style={{ fontSize: 12, color: TEXT3, textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>{label}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 overflow-x-auto p-6">
+      {/* KANBAN */}
+      <div style={{ flex: 1, overflowX: 'auto', padding: '20px 24px' }}>
         {cargando ? (
-          <div className="flex items-center justify-center h-48">
-            <span className="text-white/30 text-lg">Cargando citas...</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+            <span style={{ color: TEXT3, fontSize: 15 }}>Cargando citas...</span>
           </div>
         ) : (
           <DragDropContext onDragEnd={onDragEnd}>
-            <div className="flex gap-4 min-w-max h-full">
-              {COLUMNAS.map(({ id, label, accent }) => {
+            <div style={{ display: 'flex', gap: 12, minWidth: 'max-content', height: '100%' }}>
+              {COLUMNAS.map(({ id, label, accent, bg }) => {
                 const citas = board[id as EstadoCita] || []
                 return (
-                  <div key={id} className="flex flex-col flex-1 min-w-60 max-w-80">
-                    <div className="flex items-center justify-between mb-4 px-1">
-                      <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full" style={{ background: accent }}></div>
-                        <span className="text-sm font-bold uppercase tracking-wider" style={{ color: accent }}>
+                  <div key={id} style={{ display: 'flex', flexDirection: 'column', width: 272, flexShrink: 0 }}>
+                    {/* Column header */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: accent }} />
+                        <span style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: accent }}>
                           {label}
                         </span>
                       </div>
-                      <span className="text-sm font-bold px-2.5 py-0.5 rounded-full" style={{ background: `${accent}18`, color: accent }}>
+                      <span style={{ fontSize: 12, fontWeight: 600, padding: '2px 8px', borderRadius: 12, background: bg, color: accent }}>
                         {citas.length}
                       </span>
                     </div>
@@ -242,11 +254,21 @@ export default function RecepcionPage() {
                         <div
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          className="flex flex-col gap-3 rounded-xl p-1.5 transition-all min-h-20 flex-1"
-                          style={{ background: snapshot.isDraggingOver ? `${accent}0D` : 'transparent' }}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: 8,
+                            borderRadius: 10,
+                            padding: 6,
+                            minHeight: 80,
+                            flex: 1,
+                            background: snapshot.isDraggingOver ? bg : 'transparent',
+                            border: snapshot.isDraggingOver ? `1px dashed ${accent}40` : '1px solid transparent',
+                            transition: 'all 0.15s',
+                          }}
                         >
                           {citas.length === 0 && !snapshot.isDraggingOver && (
-                            <div className="text-center py-8 text-white/15 text-sm">Sin citas</div>
+                            <div style={{ textAlign: 'center', padding: '32px 0', color: TEXT2, fontSize: 14 }}>Sin citas</div>
                           )}
                           {citas.map((cita, idx) => (
                             <Draggable key={cita.id} draggableId={cita.id} index={idx}>
@@ -257,38 +279,50 @@ export default function RecepcionPage() {
                                   {...prov.dragHandleProps}
                                   onMouseEnter={() => setHover(cita.id)}
                                   onMouseLeave={() => setHover(null)}
-                                  className="bg-[#161A18] rounded-xl p-5 cursor-grab active:cursor-grabbing transition-all"
                                   style={{
-                                    borderTop: '1px solid rgba(255,255,255,0.09)',
-                                    borderRight: '1px solid rgba(255,255,255,0.09)',
-                                    borderBottom: '1px solid rgba(255,255,255,0.09)',
-                                    borderLeft: `3px solid ${cita.profesional.color_agenda ?? '#1D9E75'}`,
-                                    boxShadow: snap.isDragging ? '0 12px 32px rgba(0,0,0,0.5)' : undefined,
+                                    background: CARD,
+                                    borderRadius: 10,
+                                    padding: '14px 16px',
+                                    cursor: 'grab',
+                                    border: `1px solid ${BORDER2}`,
+                                    borderLeft: `3px solid ${accent}`,
+                                    boxShadow: snap.isDragging
+                                      ? '0 8px 24px rgba(0,0,0,0.4)'
+                                      : hover === cita.id ? `0 2px 8px rgba(0,0,0,0.3)` : 'none',
+                                    transform: hover === cita.id && !snap.isDragging ? 'translateY(-1px)' : 'none',
+                                    transition: 'box-shadow 0.15s, transform 0.15s',
                                     ...prov.draggableProps.style,
                                   }}
                                 >
-                                  <div className="text-white font-bold text-lg mb-2 leading-tight">
+                                  {/* Folio */}
+                                  <div style={{ fontSize: 11, color: TEXT3, fontWeight: 600, marginBottom: 6, letterSpacing: '0.05em' }}>
+                                    {cita.folio}
+                                  </div>
+                                  {/* Nombre paciente */}
+                                  <div style={{ fontSize: 15, fontWeight: 700, color: TEXT1, marginBottom: 4, lineHeight: 1.3 }}>
                                     {cita.paciente.nombre} {cita.paciente.apellido}
                                   </div>
-                                  <div className="text-white/80 text-base font-medium mb-1">
+                                  {/* Médico */}
+                                  <div style={{ fontSize: 14, color: TEXT2, marginBottom: 4 }}>
                                     {cita.profesional.usuario.nombre} {cita.profesional.usuario.apellido}
-                                    <span className="text-white/30 mx-1.5">·</span>
-                                    <span className="text-white/60">{cita.profesional.especialidad}</span>
+                                    <span style={{ color: TEXT3, margin: '0 6px' }}>·</span>
+                                    <span style={{ color: TEXT3 }}>{cita.profesional.especialidad}</span>
                                   </div>
+                                  {/* Motivo */}
                                   {cita.motivo && (
-                                    <div className="text-white/50 text-sm mb-4">{cita.motivo}</div>
+                                    <div style={{ fontSize: 13, color: TEXT2, marginBottom: 10, lineHeight: 1.4 }}>{cita.motivo}</div>
                                   )}
-                                  <div className="flex items-center justify-between mt-2">
-                                    <span className="text-white/40 text-sm font-medium">
+                                  {/* Footer */}
+                                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: `1px solid ${BORDER2}` }}>
+                                    <span style={{ fontSize: 14, color: TEXT2, fontWeight: 500 }}>
                                       {new Date(cita.fecha_hora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
                                     </span>
-                                    <div className="flex items-center gap-2">
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                                       {cita.llegada && <TiempoEspera desde={cita.llegada} />}
                                       {SIGUIENTE_ESTADO[cita.estado] && hover === cita.id && (
                                         <button
                                           onClick={(e) => { e.stopPropagation(); moverSiguiente(cita) }}
-                                          className="text-sm font-semibold px-3 py-1 rounded-lg transition-all"
-                                          style={{ background: `${accent}25`, color: accent }}
+                                          style={{ fontSize: 12, fontWeight: 600, padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', background: bg, color: accent }}
                                         >
                                           → Siguiente
                                         </button>
