@@ -53,7 +53,7 @@ export const api = {
 }
 // Fichas clínicas
 export const getFicha = (citaId: string) =>
-  api.get(`/fichas/cita/${citaId}`).then(r => r.data);
+  apiFetch(`/fichas/cita/${citaId}`);
 
 export const guardarFicha = (citaId: string, data: { diagnostico?: string; indicaciones?: string; proximo_control?: string }) =>
-  api.post(`/fichas/cita/${citaId}`, data).then(r => r.data);
+  apiFetch(`/fichas/cita/${citaId}`, { method: 'POST', body: JSON.stringify(data) });

@@ -25,13 +25,23 @@ export class FichasService {
     return ficha;
   }
 
-  async guardar(citaId: string, body: any) {
-    const { paciente_id, profesional_id, cita_id, id, created_at, updated_at, ...data } = body;
-    return this.prisma.fichaClinica.update({
-      where: { cita_id: citaId },
-      data: { ...data, updated_at: new Date() },
-    });
-  }
+ async guardar(citaId: string, body: any) {
+  const { paciente_id, profesional_id, cita_id, id, created_at, updated_at, ...data } = body;
+  const cita = await this.prisma.cita.findUnique({
+    where: { id: citaId },
+    select: { paciente_id: true, profesional_id: true },
+  });
+  return this.prisma.fichaClinica.upsert({
+    where: { cita_id: citaId },
+    update: { ...data, updated_at: new Date() },
+    create: {
+      cita_id: citaId,
+      paciente_id: cita!.paciente_id,
+      profesional_id: cita!.profesional_id,
+      ...data,
+    },
+  });
+}
 
   async getPorPaciente(pacienteId: string) {
     return this.prisma.fichaClinica.findMany({
